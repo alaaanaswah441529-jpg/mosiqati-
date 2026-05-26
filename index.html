@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>موسيقاتي - MOSIQATI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0b0b12;--surface:#13131e;--card:#1a1a28;--card2:#20202f;
+  --accent:#9333ea;--accent2:#06b6d4;--gold:#f59e0b;
+  --text:#f0eeff;--muted:#7c7a9a;--border:rgba(147,51,234,0.15);
+  --radius:16px;--font:'Cairo',sans-serif;
+}
+.light{
+  --bg:#f5f3ff;--surface:#ffffff;--card:#ede9fe;--card2:#f3f0ff;
+  --accent:#7c3aed;--accent2:#0891b2;--gold:#d97706;
+  --text:#1e1b4b;--muted:#6b6a8a;--border:rgba(124,58,237,0.15);
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;transition:background 0.3s,color 0.3s}
+/* SPLASH */
+#splash{position:fixed;inset:0;background:#0b0b12;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;transition:opacity 0.6s}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-logo{font-size:64px;margin-bottom:16px;animation:pulse 1.5s infinite}
+.splash-title{font-size:32px;font-weight:700;background:linear-gradient(135deg,#9333ea,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.splash-sub{color:#7c7a9a;font-size:14px;margin-bottom:40px}
+.splash-bar{width:200px;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+.splash-fill{height:100%;background:linear-gradient(90deg,#9333ea,#06b6d4);border-radius:2px;animation:load 2s ease forwards}
+@keyframes load{from{width:0}to{width:100%}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+
+/* LAYOUT */
+#app{display:none;flex-direction:column;min-height:100vh;max-width:420px;margin:0 auto;position:relative;background:var(--surface);box-shadow:0 0 60px rgba(147,51,234,0.1)}
+#app.show{display:flex}
+
+/* STATUS BAR */
+.statusbar{background:var(--surface);padding:10px 18px 6px;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);border-bottom:0.5px solid var(--border)}
+
+/* HEADER */
+.header{background:var(--surface);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);position:sticky;top:0;z-index:100}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#9333ea,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:20px}
+.logo-name{font-size:20px;font-weight:700;color:var(--text)}
+.logo-name span{color:var(--accent)}
+.hactions{display:flex;gap:8px;align-items:center}
+.ibtn{width:36px;height:36px;border-radius:50%;background:var(--card);border:0.5px solid var(--border);color:var(--muted);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;position:relative}
+.ibtn:hover{background:var(--accent);color:#fff}
+.badge{position:absolute;top:-3px;left:-3px;background:var(--accent);color:#fff;border-radius:50%;width:17px;height:17px;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:600}
+
+/* NAV TABS */
+.navtabs{display:flex;background:var(--surface);border-bottom:0.5px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.navtabs::-webkit-scrollbar{display:none}
+.ntab{padding:11px 14px;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.2s;flex-shrink:0;font-weight:500}
+.ntab.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* PAGES */
+.page{display:none;flex:1;overflow-y:auto;padding:14px;padding-bottom:80px}
+.page.on{display:block}
+
+/* CATEGORIES */
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:6px;margin-bottom:14px}
+.chips::-webkit-scrollbar{display:none}
+.chip{padding:7px 16px;border-radius:20px;font-size:12px;cursor:pointer;background:var(--card);border:0.5px solid var(--border);color:var(--muted);white-space:nowrap;flex-shrink:0;transition:all 0.2s;font-weight:500}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* SECTION TITLE */
+.stitle{font-size:11px;font-weight:600;color:var(--muted);margin:14px 0 10px;text-transform:uppercase;letter-spacing:0.8px}
+
+/* PRODUCTS GRID */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);overflow:hidden;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s}
+.pcard:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(147,51,234,0.15)}
+.pimg{height:105px;display:flex;align-items:center;justify-content:center;font-size:44px;position:relative}
+.pbadge{position:absolute;top:7px;right:7px;background:var(--accent);color:#fff;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+.pbadge.new{background:#10b981}
+.pbadge.pro{background:var(--gold);color:#1a0a00}
+.pinfo{padding:10px}
+.pname{font-size:13px;font-weight:600;margin-bottom:2px}
+.pbrand{font-size:11px;color:var(--muted);margin-bottom:7px}
+.pfoot{display:flex;align-items:center;justify-content:space-between}
+.pprice{font-size:14px;font-weight:700;color:var(--accent)}
+.stars{color:var(--gold);font-size:11px}
+.addbtn{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s}
+.addbtn:active{transform:scale(0.85)}
+
+/* HERO BANNER */
+.hero{background:linear-gradient(135deg,rgba(147,51,234,0.25),rgba(6,182,212,0.15));border:0.5px solid var(--border);border-radius:20px;padding:18px;margin-bottom:16px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(147,51,234,0.3),transparent);border-radius:50%}
+.hero-label{font-size:11px;color:var(--accent);font-weight:600;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase}
+.hero-title{font-size:18px;font-weight:700;margin-bottom:6px;line-height:1.3}
+.hero-sub{font-size:12px;color:var(--muted);margin-bottom:14px}
+.hero-btn{background:var(--accent);color:#fff;border:none;border-radius:24px;padding:9px 22px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font)}
+
+/* DETAIL PAGE */
+.dbig{font-size:72px;text-align:center;padding:20px;background:var(--card);border-radius:20px;margin-bottom:14px}
+.dname{font-size:20px;font-weight:700;margin-bottom:4px}
+.dbrand{font-size:13px;color:var(--muted);margin-bottom:8px}
+.dprice{font-size:26px;font-weight:700;color:var(--accent);margin-bottom:14px}
+.dcard{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:14px;margin-bottom:12px}
+.drow{display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.drow:last-child{border:none}
+.dlabel{color:var(--muted)}
+.dval{font-weight:600}
+.bigbtn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);transition:opacity 0.2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.bigbtn:hover{opacity:0.88}
+.bigbtn.outline{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}
+
+/* RATING */
+.rrating{display:flex;align-items:center;gap:16px;padding:14px;background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:12px}
+.rbig{font-size:36px;font-weight:700;color:var(--accent);text-align:center;min-width:60px}
+.rbars{flex:1}
+.rbar{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.rblabel{font-size:11px;color:var(--muted);width:14px}
+.rbtrack{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.rbfill{height:100%;background:var(--gold);border-radius:3px}
+.rbcount{font-size:11px;color:var(--muted);width:28px;text-align:right}
+
+/* REVIEW CARDS */
+.revcard{background:var(--card);border-radius:12px;border:0.5px solid var(--border);padding:12px;margin-bottom:8px}
+.revhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.revname{font-size:13px;font-weight:600}
+.revdate{font-size:11px;color:var(--muted)}
+.revtext{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* SERVICES */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.scard{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);padding:16px;text-align:center;cursor:pointer;transition:all 0.2s}
+.scard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.sicon{font-size:30px;margin-bottom:8px}
+.sname{font-size:13px;font-weight:600}
+.sdesc{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* CART */
+.citem{background:var(--card);border-radius:14px;border:0.5px solid var(--border);padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:9px}
+.cimg{font-size:34px;min-width:44px;text-align:center}
+.cinfo{flex:1}
+.cname{font-size:13px;font-weight:600;margin-bottom:3px}
+.cprice{font-size:14px;color:var(--accent);font-weight:700}
+.qctrl{display:flex;align-items:center;gap:8px}
+.qbtn{width:28px;height:28px;border-radius:50%;background:var(--surface);border:0.5px solid var(--border);color:var(--text);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font)}
+.qval{font-size:13px;font-weight:700;min-width:18px;text-align:center}
+.delBtn{background:none;border:none;color:#ef4444;font-size:18px;cursor:pointer;padding:4px}
+
+/* CHECKOUT BAR */
+.cbar{position:fixed;bottom:62px;left:50%;transform:translateX(-50%);width:100%;max-width:420px;background:var(--surface);border-top:0.5px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:50;display:none}
+.cbar.show{display:flex}
+.ctotal{font-size:11px;color:var(--muted)}
+.ctotalval{font-size:19px;font-weight:700;color:var(--accent)}
+.cobtn{background:var(--accent);color:#fff;border:none;border-radius:24px;padding:11px 26px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font)}
+
+/* PROFILE */
+.pheader{text-align:center;padding:20px 0 16px;border-bottom:0.5px solid var(--border);margin-bottom:16px}
+.avatar{width:76px;height:76px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;font-weight:700}
+.uname{font-size:18px;font-weight:700;margin-bottom:4px}
+.urole{font-size:12px;color:var(--muted)}
+.prow{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:0.5px solid var(--border)}
+.plabel{font-size:14px;font-weight:500;display:flex;align-items:center;gap:8px}
+.toggle{width:46px;height:25px;border-radius:13px;background:var(--border);position:relative;cursor:pointer;border:none;transition:background 0.2s}
+.toggle.on{background:var(--accent)}
+.tknob{position:absolute;top:3px;right:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:right 0.2s}
+.toggle.on .tknob{right:24px}
+.sbtn{padding:6px 16px;border-radius:20px;font-size:12px;background:var(--card);border:0.5px solid var(--border);color:var(--text);cursor:pointer;transition:all 0.2s;font-family:var(--font);font-weight:500}
+.sbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.lsel{background:var(--card);border:0.5px solid var(--border);color:var(--text);padding:6px 12px;border-radius:10px;font-size:13px;font-family:var(--font)}
+.pstars{display:flex;gap:4px;cursor:pointer}
+.pstar{font-size:22px;color:var(--gold);transition:transform 0.1s}
+.pstar:hover{transform:scale(1.2)}
+.pstar.off{color:var(--border)}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .eicon{font-size:56px;margin-bottom:14px;opacity:0.35}
+.empty p{font-size:14px}
+
+/* SEARCH */
+.sinput{width:100%;padding:11px 16px;border-radius:12px;background:var(--card);border:0.5px solid var(--border);color:var(--text);font-size:13px;font-family:var(--font);margin-bottom:14px;outline:none}
+.sinput:focus{border-color:var(--accent)}
+
+/* BOTTOM NAV */
+.bnav{display:flex;background:var(--surface);border-top:0.5px solid var(--border);padding:8px 0;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:420px;z-index:100}
+.bitem{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--muted);font-size:10px;padding:4px 0;transition:color 0.2s;font-weight:500}
+.bitem.on{color:var(--accent)}
+.bitem svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;padding:10px 22px;border-radius:24px;font-size:13px;font-weight:600;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;z-index:999;box-shadow:0 4px 20px rgba(147,51,234,0.4)}
+.toast.show{opacity:1}
+
+/* MODE TOGGLE BTN */
+.modebtn{padding:6px 14px;border-radius:20px;background:var(--card);border:0.5px solid var(--border);color:var(--text);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--font);font-weight:500;transition:all 0.2s}
+
+/* ORDER SUCCESS */
+.success-screen{text-align:center;padding:40px 20px}
+.success-icon{font-size:72px;animation:pop 0.4s ease}
+@keyframes pop{0%{transform:scale(0)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-logo">🎵</div>
+  <div class="splash-title">موسيقاتي</div>
+  <div class="splash-sub">MOSIQATI — متجر الآلات الموسيقية</div>
+  <div class="splash-bar"><div class="splash-fill"></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="statusbar">
+    <span id="stime">9:41</span>
+    <span style="font-weight:600;color:var(--accent)">MOSIQATI</span>
+    <span>📶 🔋</span>
+  </div>
+
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🎵</div>
+      <div class="logo-name">موسيقا<span>تي</span></div>
+    </div>
+    <div class="hactions">
+      <button class="modebtn" onclick="toggleMode()" id="modeBtn">🌙 داكن</button>
+      <button class="ibtn" onclick="goPage('search')" title="بحث">🔍</button>
+      <button class="ibtn" onclick="goPage('cart')" title="سلة" style="position:relative">
+        🛒<span class="badge" id="cbadge">0</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="navtabs" id="navtabs">
+    <div class="ntab on" onclick="goPage('home');setTab(this)">🏠 الرئيسية</div>
+    <div class="ntab" onclick="goPage('services');setTab(this)">🔧 خدمات</div>
+    <div class="ntab" onclick="goPage('cart');setTab(this)">🛒 سلة</div>
+    <div class="ntab" onclick="goPage('profile');setTab(this)">👤 حسابي</div>
+  </div>
+
+  <!-- HOME -->
+  <div class="page on" id="page-home">
+    <div class="hero">
+      <div class="hero-label">🎵 عرض خاص</div>
+      <div class="hero-title">متجر الآلات الموسيقية الأول في الأردن</div>
+      <div class="hero-sub">اكتشف أفضل الآلات بأسعار مميزة</div>
+      <button class="hero-btn" onclick="document.getElementById('cats').scrollIntoView({behavior:'smooth'})">تسوق الآن</button>
+    </div>
+    <div id="cats">
+      <div class="chips" id="catChips">
+        <div class="chip on" onclick="filterCat('all',this)">الكل</div>
+        <div class="chip" onclick="filterCat('guitar',this)">🎸 غيتار</div>
+        <div class="chip" onclick="filterCat('piano',this)">🎹 بيانو</div>
+        <div class="chip" onclick="filterCat('oud',this)">🪕 عود</div>
+        <div class="chip" onclick="filterCat('studio',this)">🎙️ استوديو</div>
+        <div class="chip" onclick="filterCat('drum',this)">🥁 طبول</div>
+      </div>
+    </div>
+    <div class="stitle">المنتجات المتاحة</div>
+    <div class="pgrid" id="pgrid"></div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="page" id="page-search">
+    <input class="sinput" type="text" placeholder="🔍 ابحث عن آلة موسيقية..." oninput="doSearch(this.value)" id="sinput">
+    <div class="stitle" id="sresLabel">نتائج البحث</div>
+    <div class="pgrid" id="sgrid"></div>
+  </div>
+
+  <!-- DETAIL -->
+  <div class="page" id="page-detail">
+    <button onclick="history.back()||goPage('home')" style="background:var(--card);border:0.5px solid var(--border);color:var(--text);padding:8px 16px;border-radius:10px;cursor:pointer;margin-bottom:14px;font-family:var(--font);font-size:13px">← رجوع</button>
+    <div id="dContent"></div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="page" id="page-services">
+    <div class="stitle">خدماتنا الإضافية</div>
+    <div class="sgrid">
+      <div class="scard"><div class="sicon">🔧</div><div class="sname">صيانة وإصلاح</div><div class="sdesc">ضبط وإصلاح احترافي</div></div>
+      <div class="scard"><div class="sicon">🎓</div><div class="sname">دروس موسيقية</div><div class="sdesc">تعلم مع محترفين</div></div>
+      <div class="scard"><div class="sicon">📦</div><div class="sname">توصيل سريع</div><div class="sdesc">لجميع مناطق الأردن</div></div>
+      <div class="scard"><div class="sicon">🎼</div><div class="sname">تأجير آلات</div><div class="sdesc">استأجر بسعر يومي</div></div>
+      <div class="scard"><div class="sicon">🔄</div><div class="sname">استبدال</div><div class="sdesc">قيّم آلتك القديمة</div></div>
+      <div class="scard"><div class="sicon">🎤</div><div class="sname">استوديو تسجيل</div><div class="sdesc">تسجيل احترافي</div></div>
+    </div>
+    <div class="dcard" style="margin-top:6px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">📞 تواصل معنا</div>
+      <div class="drow"><span class="dlabel">الهاتف</span><span class="dval">+962 6 123 4567</span></div>
+      <div class="drow"><span class="dlabel">واتساب</span><span class="dval">+962 77 123 4567</span></div>
+      <div class="drow"><span class="dlabel">البريد</span><span class="dval">info@mosiqati.jo</span></div>
+      <div class="drow" style="border:none"><span class="dlabel">الموقع</span><span class="dval">عمان، الأردن</span></div>
+    </div>
+  </div>
+
+  <!-- CART -->
+  <div class="page" id="page-cart">
+    <div class="stitle">سلة التسوق</div>
+    <div id="cartList"></div>
+    <div class="empty" id="cartEmpty">
+      <div class="eicon">🛒</div>
+      <p>سلة التسوق فارغة</p>
+      <button class="bigbtn" style="margin-top:16px;max-width:200px" onclick="goPage('home')">تسوق الآن</button>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div class="page" id="page-profile">
+    <div class="pheader">
+      <div class="avatar">أ</div>
+      <div class="uname">بشارة</div>
+      <div class="urole">⭐ عضو ذهبي • موسيقاتي</div>
+    </div>
+    <div class="stitle">تخصيص التطبيق</div>
+    <div class="prow">
+      <span class="plabel">🌙 الوضع الداكن</span>
+      <button class="toggle on" id="darkTog" onclick="toggleMode()"><div class="tknob"></div></button>
+    </div>
+    <div class="prow">
+      <span class="plabel">🔔 الإشعارات</span>
+      <button class="toggle on" onclick="this.classList.toggle('on')"><div class="tknob"></div></button>
+    </div>
+    <div class="prow">
+      <span class="plabel">🔊 أصوات التطبيق</span>
+      <div style="display:flex;gap:6px">
+        <button class="sbtn on" onclick="setSnd(this,'on')">تشغيل</button>
+        <button class="sbtn" onclick="setSnd(this,'off')">إيقاف</button>
+      </div>
+    </div>
+    <div class="prow">
+      <span class="plabel">🌐 اللغة</span>
+      <select class="lsel">
+        <option>العربية</option>
+        <option>English</option>
+      </select>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="dcard">
+        <div class="drow"><span class="dlabel">إصدار التطبيق</span><span class="dval">1.0.0</span></div>
+        <div class="drow"><span class="dlabel">المطور</span><span class="dval">بشارة العوابدة</span></div>
+        <div class="drow" style="border:none"><span class="dlabel">المشروع</span><span class="dval">BTEC Unit 8</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <div class="bitem on" onclick="goPage('home');setBnav(this)" id="bn-home">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>الرئيسية</span>
+    </div>
+    <div class="bitem" onclick="goPage('search');setBnav(this)" id="bn-search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>بحث</span>
+    </div>
+    <div class="bitem" onclick="goPage('services');setBnav(this)" id="bn-services">
+      <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+      <span>خدمات</span>
+    </div>
+    <div class="bitem" onclick="goPage('cart');setBnav(this)" id="bn-cart" style="position:relative">
+      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      <span>سلة</span>
+    </div>
+    <div class="bitem" onclick="goPage('profile');setBnav(this)" id="bn-profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>حسابي</span>
+    </div>
+  </nav>
+
+  <!-- CHECKOUT BAR -->
+  <div class="cbar" id="cbar">
+    <div>
+      <div class="ctotal">الإجمالي</div>
+      <div class="ctotalval" id="totalVal">0 JD</div>
+    </div>
+    <button class="cobtn" onclick="checkout()">إتمام الشراء ✓</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const products=[
+  {id:1,name:'غيتار كلاسيكي',brand:'Yamaha',price:89,rating:4.8,rcount:124,cat:'guitar',emoji:'🎸',bg:'#1a1020',badge:'الأكثر مبيعاً',badgeClass:'',specs:{النوع:'كلاسيكي',الحجم:'4/4',المادة:'خشب الأرز','عدد الأوتار':'6'},desc:'غيتار كلاسيكي احترافي مثالي للمبتدئين والمحترفين على حد سواء. مصنوع من أجود أنواع الخشب بصوت دافئ ومتوازن.'},
+  {id:2,name:'بيانو رقمي',brand:'Roland',price:349,rating:4.9,rcount:89,cat:'piano',emoji:'🎹',bg:'#0a1628',badge:'',badgeClass:'',specs:{النوع:'رقمي',المفاتيح:'88','مستويات الديناميك':'4','أصوات مدمجة':'30'},desc:'بيانو رقمي بتقنية المفاتيح الموزونة للإحساس الحقيقي. يدعم التوصيل بالكمبيوتر وتطبيقات الموسيقى.'},
+  {id:3,name:'عود عربي فاخر',brand:'Al-Nahaas',price:129,rating:4.7,rcount:67,cat:'oud',emoji:'🪕',bg:'#1a0a00',badge:'جديد',badgeClass:'new',specs:{النوع:'عربي',الخامة:'خشب الجوز','عدد الأوتار':'11','طول الوتر':'60cm'},desc:'عود عربي أصيل بصوت دافئ عميق. مصنوع يدوياً من خشب الجوز الطبيعي مع معالجة احترافية.'},
+  {id:4,name:'ميكروفون استوديو',brand:'Audio-Technica',price:199,rating:4.6,rcount:203,cat:'studio',emoji:'🎙️',bg:'#0d1a0d',badge:'',badgeClass:'',specs:{النوع:'كوندنسر','الاستجابة':'20Hz-20kHz','المستقطب':'كارديود',الإخراج:'XLR'},desc:'ميكروفون كوندنسر احترافي مثالي للتسجيل والبودكاست والبث المباشر.'},
+  {id:5,name:'طبل إلكتروني',brand:'Roland',price:279,rating:4.5,rcount:56,cat:'drum',emoji:'🥁',bg:'#1a0a1a',badge:'',badgeClass:'',specs:{النوع:'إلكتروني','وحدات الضرب':'8','مستويات الحساسية':'10','صوت مدمج':'100+'},desc:'مجموعة طبول إلكترونية كاملة بحساسية عالية وصوت احترافي. مثالية للتدريب المنزلي.'},
+  {id:6,name:'غيتار كهربائي',brand:'Fender',price:449,rating:4.9,rcount:312,cat:'guitar',emoji:'🎸',bg:'#1a0000',badge:'احترافي',badgeClass:'pro',specs:{النوع:'كهربائي','عدد الأوتار':'6',الجسم:'آش',البيكاب:'هامباكر'},desc:'غيتار كهربائي أصلي من Fender بصوت قوي وعميق. الخيار الأول للمحترفين.'},
+  {id:7,name:'كمان كلاسيكي',brand:'Stentor',price:189,rating:4.4,rcount:43,cat:'guitar',emoji:'🎻',bg:'#0a0f00',badge:'',badgeClass:'',specs:{الحجم:'4/4',الخامة:'خشب التنوب',القوس:'خشب برازيلي',الأوتار:'4'},desc:'كمان كلاسيكي عالي الجودة مثالي لطلاب الموسيقى. يأتي مع حامل وحقيبة.'},
+  {id:8,name:'لوح مفاتيح MIDI',brand:'Arturia',price:159,rating:4.7,rcount:88,cat:'studio',emoji:'🎛️',bg:'#001a1a',badge:'ذكي',badgeClass:'new',specs:{المفاتيح:'49','عجلات التحكم':'2',التوصيل:'USB-C','المتوافق':'كل برامج DAW'},desc:'لوح MIDI ذكي للإنتاج الموسيقي الاحترافي. متوافق مع جميع برامج التسجيل.'},
+];
+
+let cart=[], isDark=true;
+
+function renderProducts(list,grid){
+  const g=document.getElementById(grid||'pgrid');
+  if(!list.length){g.innerHTML='<div class="empty" style="grid-column:span 2"><div class="eicon">🎵</div><p>لا توجد منتجات</p></div>';return;}
+  g.innerHTML=list.map(p=>`
+    <div class="pcard" onclick="showDetail(${p.id})">
+      <div class="pimg" style="background:${p.bg}25">
+        ${p.emoji}
+        ${p.badge?`<span class="pbadge ${p.badgeClass}">${p.badge}</span>`:''}
+      </div>
+      <div class="pinfo">
+        <div class="pname">${p.name}</div>
+        <div class="pbrand">${p.brand}</div>
+        <div class="pfoot">
+          <div>
+            <div class="stars">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))}</div>
+            <div class="pprice">${p.price} JD</div>
+          </div>
+          <button class="addbtn" onclick="event.stopPropagation();addCart(${p.id})" title="أضف للسلة">+</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterCat(cat,el){
+  document.querySelectorAll('#catChips .chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  renderProducts(cat==='all'?products:products.filter(p=>p.cat===cat));
+}
+
+function doSearch(q){
+  const r=products.filter(p=>p.name.includes(q)||p.brand.toLowerCase().includes(q.toLowerCase()));
+  document.getElementById('sresLabel').textContent=q?`نتائج "${q}" (${r.length})`:'ابحث عن منتج';
+  renderProducts(r,'sgrid');
+}
+
+function showDetail(id){
+  const p=products.find(x=>x.id===id);
+  const pct=Math.round(p.rcount*0.7),p2=Math.round(p.rcount*0.2),p3=Math.round(p.rcount*0.07),p2c=Math.round(p.rcount*0.03);
+  document.getElementById('dContent').innerHTML=`
+    <div class="dbig" style="background:${p.bg}30">${p.emoji}</div>
+    <div class="dname">${p.name}</div>
+    <div class="dbrand">${p.brand}</div>
+    <div class="stars" style="font-size:15px;margin-bottom:8px">${'★'.repeat(Math.round(p.rating))}${'☆'.repeat(5-Math.round(p.rating))} (${p.rcount} تقييم)</div>
+    <div class="dprice">${p.price} JD</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.7">${p.desc}</p>
+    <div class="dcard">
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">📋 المواصفات</div>
+      ${Object.entries(p.specs).map(([k,v])=>`<div class="drow"><span class="dlabel">${k}</span><span class="dval">${v}</span></div>`).join('')}
+    </div>
+
+    <button class="bigbtn" onclick="addCart(${p.id});goPage('cart')" style="margin-bottom:8px">🛒 أضف للسلة</button>
+    <button class="bigbtn outline" onclick="goPage('home')">← متابعة التسوق</button>`;
+  goPage('detail');
+}
+
+function addCart(id){
+  const p=products.find(x=>x.id===id);
+  const ex=cart.find(x=>x.id===id);
+  if(ex) ex.qty++;
+  else cart.push({...p,qty:1});
+  updateCart();
+  showToast(`✅ تمت الإضافة: ${p.name}`);
+}
+
+function updateCart(){
+  const total=cart.reduce((a,x)=>a+x.qty,0);
+  document.getElementById('cbadge').textContent=total;
+  renderCart();
+}
+
+function renderCart(){
+  const el=document.getElementById('cartList');
+  const empty=document.getElementById('cartEmpty');
+  const bar=document.getElementById('cbar');
+  if(!cart.length){el.innerHTML='';empty.style.display='block';bar.classList.remove('show');return;}
+  empty.style.display='none';
+  const sum=cart.reduce((a,x)=>a+x.price*x.qty,0);
+  el.innerHTML=cart.map(p=>`
+    <div class="citem">
+      <div class="cimg">${p.emoji}</div>
+      <div class="cinfo">
+        <div class="cname">${p.name}</div>
+        <div class="cprice">${(p.price*p.qty)} JD</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+        <div class="qctrl">
+          <button class="qbtn" onclick="changeQty(${p.id},-1)">−</button>
+          <span class="qval">${p.qty}</span>
+          <button class="qbtn" onclick="changeQty(${p.id},1)">+</button>
+        </div>
+        <button class="delBtn" onclick="removeItem(${p.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('totalVal').textContent=sum+' JD';
+  if(document.getElementById('page-cart').classList.contains('on')) bar.classList.add('show');
+}
+
+function changeQty(id,d){
+  const i=cart.findIndex(x=>x.id===id);
+  cart[i].qty+=d;
+  if(cart[i].qty<=0){cart.splice(i,1);}
+  updateCart();
+}
+function removeItem(id){
+  cart=cart.filter(x=>x.id!==id);
+  updateCart();
+  showToast('🗑️ تم الحذف من السلة');
+}
+
+function checkout(){
+  const bar=document.getElementById('cbar');
+  bar.classList.remove('show');
+  cart=[];
+  document.getElementById('cartList').innerHTML=`
+    <div class="success-screen">
+      <div class="success-icon">🎉</div>
+      <div style="font-size:20px;font-weight:700;margin:12px 0 6px">تم تقديم طلبك!</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px">سيتم التواصل معك خلال 24 ساعة</div>
+      <button class="bigbtn" style="max-width:200px;margin:0 auto" onclick="goPage('home')">العودة للمتجر</button>
+    </div>`;
+  document.getElementById('cartEmpty').style.display='none';
+  document.getElementById('cbadge').textContent='0';
+  showToast('🎉 تم تقديم طلبك بنجاح!');
+}
+
+let currentPage='home';
+function goPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.getElementById('page-'+p).classList.add('on');
+  currentPage=p;
+  const bar=document.getElementById('cbar');
+  if(p==='cart'&&cart.length) bar.classList.add('show');
+  else bar.classList.remove('show');
+  if(p==='search') setTimeout(()=>document.getElementById('sinput').focus(),100);
+}
+
+function setTab(el){
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+}
+function setBnav(el){
+  document.querySelectorAll('.bitem').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function toggleMode(){
+  isDark=!isDark;
+  document.body.classList.toggle('light',!isDark);
+  document.getElementById('modeBtn').textContent=isDark?'🌙 داكن':'☀️ فاتح';
+  const t=document.getElementById('darkTog');
+  if(isDark) t.classList.add('on'); else t.classList.remove('on');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function setSnd(el){
+  document.querySelectorAll('.sbtn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function setRating(n){
+  document.querySelectorAll('.pstar').forEach((s,i)=>{
+    if(i<n) s.classList.remove('off'); else s.classList.add('off');
+  });
+  showToast('⭐ شكراً على تقييمك '+n+' نجوم!');
+}
+
+// Clock
+function updateTime(){
+  const now=new Date();
+  const h=now.getHours().toString().padStart(2,'0');
+  const m=now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('stime').textContent=h+':'+m;
+}
+setInterval(updateTime,1000);updateTime();
+
+// Init
+renderProducts(products);
+setTimeout(()=>{
+  document.getElementById('splash').classList.add('hide');
+  document.getElementById('app').classList.add('show');
+  setTimeout(()=>document.getElementById('splash').style.display='none',700);
+},2200);
+</script>
+</body>
+</html>
